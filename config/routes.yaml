@@ -2,6 +2,6 @@
 #    path: /
 #    controller: App\Controller\DefaultController::index
 
-getLatestPiValue:
-    path: /pi
-    controller: App\Controller\PiController::getLatestPiValue
+# getLatestPiValue:
+#     path: /pi
+#     controller: App\Controller\PiController::getLatestPiValue
