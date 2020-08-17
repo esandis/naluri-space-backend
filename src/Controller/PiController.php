@@ -25,7 +25,7 @@ class PiController
         // $pi = $this->countPiValue();
         $pi = 3.14;
 
-        return new Response(['pi' => $pi]);
+        return new Response(json_encode(['pi' => $pi]));
     }
 
     public function countPiValue()
