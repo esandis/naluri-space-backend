@@ -32,6 +32,7 @@ class PiController
         $pi = $latestPi->getPi();
 
         $sunRadius = 695508; //in km
+        bcscale(5);
         $sunCircumference = bcmul(bcmul('2', $pi), $sunRadius);
 
         $response = [
