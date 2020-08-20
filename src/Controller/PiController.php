@@ -7,6 +7,8 @@ use Symfony\Component\HttpFoundation\Response;
 use FOS\RestBundle\Controller\FOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\PiIteration;
 
 /**
  * Pi Controller.
@@ -14,6 +16,10 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
  */
 class PiController
 {
+    public function __construct(EntityManagerInterface $em) {
+        $this->em = $em;
+    }
+
     /**
      * Return latest Pi Value.
      * @Rest\Get("/pi")
@@ -22,59 +28,51 @@ class PiController
      */
     public function getLatestPiValue()
     {
-        // $pi = $this->countPiValue();
-        $pi = 3.14;
+        $latestPi = $this->em->getRepository(PiIteration::class)->findByLatestIteration();
 
-        return new Response(json_encode(['pi' => $pi]));
+        return new Response(json_encode(['pi' => $latestPi->getPi()]));
     }
 
-    public function countPiValue()
+    public function countNextPiIteration() {
+        $latestPi = $this->em->getRepository(PiIteration::class)->findByLatestIteration();
+
+        $latestPiDigit = $latestPi ? $latestPi->getDigit() : 0;
+        $nextPiDigit = $latestPiDigit + 1;
+
+        $newPi = $this->getPiWithDigits($nextPiDigit);
+
+        $this->saveNewPiIteration($nextPiDigit, $newPi);
+
+        return $newPi;
+    }
+
+    private function getPiWithDigits($precision)
     {
-        $latestPiDigit = 15;
+        $num = 0;$k = 0;
+        bcscale($precision+3);
+        $limit = ($precision+3)/14;
 
-        $nextPiDigit = $this->getPiDigit($latestPiDigit + 1);
-
-        return $nextPiDigit;
-    }
-
-    private function getPiDigit($n) {
-        $n = $n-1;
-
-        $x = ((4 * $this->getSum(1, $n)) - (2 * $this->getSum(4, $n)) - ($this->getSum(5, $n)) - ($this->getSum(6, $n)));
-        $x = $this->getDecimal($x);
-
-        return ($x * 16**14);
-    }
-
-    private function getSum($j, $n) {
-        //Left Sum
-        $s = 0.0;
-        $k = 0;
-        while ($k <= $n) {
-            $r = 8 * $k + $j;
-            $s = $this->getDecimal(($s + ((16**($n - $k)) % $r) / $r));
-            $k = $k+1;
+        while($k < $limit)
+        {
+            $num = bcadd($num, bcdiv(bcmul(bcadd('13591409',bcmul('545140134', $k)),bcmul(bcpow(-1, $k), $this->bcfact(6*$k))),bcmul(bcmul(bcpow('640320',3*$k+1),bcsqrt('640320')), bcmul($this->bcfact(3*$k), bcpow($this->bcfact($k),3)))));
+            ++$k;
         }
 
-        //Right Sum
-        $t = 0.0;
-        $k = $n + 1;
-        while (TRUE) {
-            $newt = $t + pow(16, ($n - $k)) / (8 * $k + $j);
-            //Iterate until $t no longer changes
-            if ($t == $newt) {
-                break;
-            } else {
-                $t = $newt;
-            }
-            $k = $k+1;
-        }
-
-        return ($s + $t);
+        return bcdiv(1, (bcmul(12, ($num))), $precision);
     }
 
-    private function getDecimal($x) {
-        $xint = intval($x);
-        return $x-$xint;
+    private function bcfact($n)
+    {
+        return ($n == 0 || $n== 1) ? 1 : bcmul($n,$this->bcfact($n-1));
     }
+
+    private function saveNewPiIteration($digit, $pi) {
+        $piIteration = new PiIteration();
+        $piIteration->setDigit($digit);
+        $piIteration->setPi($pi);
+
+        $this->em->persist($piIteration);
+        $this->em->flush();
+    }
+
 }
