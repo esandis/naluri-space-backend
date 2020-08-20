@@ -12,8 +12,8 @@ class CountNextPiIterationCommand extends Command
 {
     protected static $defaultName = 'app:count-next-pi-iteration';
 
-    public function __construct(EntityManagerInterface $em) {
-        parent::__construct();
+    public function __construct(string $name = null, EntityManagerInterface $em) {
+        parent::__construct($name);
         $this->em = $em;
     }
 
