@@ -4,6 +4,7 @@
     "require": {
         "php": "^7.2.5",
         "ext-ctype": "*",
+        "ext-bcmath": "*",
         "ext-iconv": "*",
         "composer/package-versions-deprecated": "1.10.99.1",
         "doctrine/doctrine-bundle": "^2.1",
