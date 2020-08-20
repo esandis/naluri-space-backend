@@ -24,11 +24,15 @@ class CountNextPiIterationCommand extends Command
         $latestPiDigit = $latestPi ? $latestPi->getDigit() : 0;
         $nextPiDigit = $latestPiDigit + 1;
 
+        $output->writeln('Next Pi Digit: '.$nextPiDigit);
+
         if ($nextPiDigit > 1000) {
             return;
         }
 
         $newPi = $this->getPiWithDigits($nextPiDigit);
+
+        $output->writeln('Next Pi: '.$newPi);
 
         $this->saveNewPiIteration($nextPiDigit, $newPi);
 
