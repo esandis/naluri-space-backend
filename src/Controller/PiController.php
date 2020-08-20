@@ -29,8 +29,17 @@ class PiController
     public function getLatestPiValue()
     {
         $latestPi = $this->em->getRepository(PiIteration::class)->findByLatestIteration();
+        $pi = $latestPi->getPi();
 
-        return new Response(json_encode(['pi' => $latestPi->getPi()]));
+        $sunRadius = 695508; //in km
+        $sunCircumference = bcmul(bcmul('2', $pi), $sunRadius);
+
+        $response = [
+            'pi' => $pi,
+            'sunCircumference' => $sunCircumference,
+        ];
+
+        return new Response(json_encode($response));
     }
 
 }
